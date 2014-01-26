@@ -1,4 +1,12 @@
+# Vim files
+*.un~
+*.swp
+*.swo
+
+# Haskell files
 dist
+.cabal-sandbox
+cabal.sandbox.config
 cabal-dev
 *.o
 *.hi
