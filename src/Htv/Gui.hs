@@ -16,7 +16,7 @@ import Data.List
 
 runGui :: IO ()
 runGui = do
-    episodes <- findEpisodes "/home/chip/Downloads/finished"
+    episodes <- findEpisodes "/home/chip/Downloads/finished/Futurama.S01-S06.DVDRip.XviD-SCC/Futurama.S02.DVDRip.AC3.DivX-AMC"
     let shows = createShows episodes
     c <- constructGui shows []
     runUi c defaultContext
@@ -49,14 +49,10 @@ constructGui shows displayedShow = do
 
 processSelected :: Widget (List Episode FormattedText) -> TVShow -> IO ()
 processSelected listWidget episodes = do
+    let sortedEpisodes = sort episodes
     clearList listWidget
-    forM_ episodes (\ep -> addToList listWidget ep =<< plainText (T.pack (formatEpisode ep)))
-  where 
+    forM_ sortedEpisodes (\ep -> addToList listWidget ep =<< plainText (T.pack (show ep)))
 
-    
-
-formatEpisode :: Episode -> String
-formatEpisode (Episode name season number path) = name ++ " - " ++ "S" ++ show season ++ "E" ++ show number ++ " - " ++ path
 
 currentSelected :: Widget (List T.Text b) -> IO T.Text
 currentSelected list = do
@@ -71,17 +67,3 @@ currentSelectedEpisode list = do
     return $ convert sel
   where convert Nothing = Episode "" 0 0 ""
         convert (Just (_, (a,_))) = a
-
-playEpisode :: Episode -> IO ()
-playEpisode ep = do
-    file <- findVideoFile (path ep)
-    --readProcess "vlc" [file] ""
-    runCommand $ "vlc " ++ file ++ " &> /dev/null"
-    return ()
-
-
-findVideoFile :: String -> IO String
-findVideoFile path = do
-    files <- getDirectoryContents path
-    let a = filter (\e -> ".rar" `isSuffixOf` e) files
-    return (path ++ "/" ++ head a)
