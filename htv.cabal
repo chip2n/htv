@@ -15,10 +15,25 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+library
+  exposed-modules: Htv.Utils, Htv.Gui
+  hs-source-dirs: src
+  default-language:    Haskell2010
+  build-depends:       base >=4.6 && <4.7,
+                       directory,
+                       containers,
+                       vty,
+                       vty-ui,
+                       text,
+                       process,
+                       regex-pcre
+
 executable htv
   main-is: Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.6 && <4.7
-  hs-source-dirs: src
+  build-depends:       base >=4.6 && <4.7,
+                       htv
+                        
+  hs-source-dirs: htv-executable
   default-language:    Haskell2010
