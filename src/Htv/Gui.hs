@@ -4,6 +4,7 @@ module Htv.Gui (
 
 import Htv.Utils
 import Graphics.Vty.Attributes
+import Graphics.Vty.LLInput
 import Graphics.Vty.Widgets.All
 import Graphics.Vty.Widgets.List
 import Graphics.Vty.Widgets.Text
@@ -12,11 +13,12 @@ import qualified Data.Text as T
 import Control.Monad
 import System.Process
 import System.Directory
+import System.Exit
 import Data.List
 
 runGui :: IO ()
 runGui = do
-    episodes <- findEpisodes "/home/chip/Downloads/finished/"
+    episodes <- findAllEpisodes "/home/chip/Downloads/finished"
     let shows = createShows episodes
     c <- constructGui shows []
     runUi c defaultContext
@@ -25,22 +27,27 @@ constructGui :: TVShows -> TVShow -> IO Collection
 constructGui shows displayedShow = do
     let showList = listShows shows
     let episodeList = map name displayedShow
-    showListWidget <- newList (Attr Default Default Default) :: IO (Widget (List T.Text FormattedText))
-    episodeListWidget <- newList (Attr Default Default Default) :: IO (Widget (List Episode FormattedText))
+    showListWidget <- newList (Attr Default Default Default)
+    episodeListWidget <- newList (Attr Default Default Default)
+    test <- (hFixed 30 showListWidget) <++> vBorder <++> (return episodeListWidget)
 
     forM_ showList (\s -> addToList showListWidget (T.pack s) =<< plainText (T.pack s) )
 
-    box <- hBox showListWidget episodeListWidget
-    ui <- centered box
+    ui <- bordered test
 
     fg <- newFocusGroup
+    fg `onKeyPressed` \_ key _ -> 
+      if key == KASCII 'q' then
+        exitSuccess else return False
     addToFocusGroup fg showListWidget
     addToFocusGroup fg episodeListWidget
 
     c <- newCollection
     addToCollection c ui fg
 
-    showListWidget `onItemActivated` (\event -> processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget)
+    processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget
+    showListWidget `onItemActivated` (\event -> focus episodeListWidget)
+    showListWidget `onSelectionChange` (\event -> processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget)
 
     episodeListWidget `onItemActivated` (\event -> playEpisode =<< currentSelectedEpisode episodeListWidget)
 
