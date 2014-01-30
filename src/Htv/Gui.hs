@@ -16,7 +16,7 @@ import Data.List
 
 runGui :: IO ()
 runGui = do
-    episodes <- findEpisodes "/home/chip/Downloads/finished/Futurama.S01-S06.DVDRip.XviD-SCC/Futurama.S02.DVDRip.AC3.DivX-AMC"
+    episodes <- findEpisodes "/home/chip/Downloads/finished/"
     let shows = createShows episodes
     c <- constructGui shows []
     runUi c defaultContext

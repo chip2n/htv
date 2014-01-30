@@ -53,7 +53,6 @@ regexTV = "([\\w\\.]+).S(\\d\\d)E(\\d\\d)"
 playEpisode :: Episode -> IO ()
 playEpisode ep = do
     file <- findVideoFile (path ep)
-    --readProcess "vlc" [file] ""
     runCommand $ "vlc " ++ file ++ " &> /dev/null"
     return ()
 
