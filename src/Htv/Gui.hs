@@ -6,13 +6,9 @@ import Htv.Utils
 import Graphics.Vty.Attributes
 import Graphics.Vty.LLInput
 import Graphics.Vty.Widgets.All
-import Graphics.Vty.Widgets.List
-import Graphics.Vty.Widgets.Text
 import Data.Map ((!))
 import qualified Data.Text as T
 import Control.Monad
-import System.Process
-import System.Directory
 import System.Exit
 import Data.List
 
@@ -26,7 +22,6 @@ runGui = do
 constructGui :: TVShows -> TVShow -> IO Collection
 constructGui shows displayedShow = do
     let showList = listShows shows
-    let episodeList = map name displayedShow
     showListWidget <- newList (Attr Default Default Default)
     episodeListWidget <- newList (Attr Default Default Default)
     test <- (hFixed 30 showListWidget) <++> vBorder <++> (return episodeListWidget)
@@ -37,19 +32,19 @@ constructGui shows displayedShow = do
 
     fg <- newFocusGroup
     fg `onKeyPressed` \_ key _ -> 
-      if key == KASCII 'q' then
-        exitSuccess else return False
+      if key == KASCII 'q'
+        then exitSuccess
+        else return False
     addToFocusGroup fg showListWidget
     addToFocusGroup fg episodeListWidget
 
     c <- newCollection
-    addToCollection c ui fg
+    _ <- addToCollection c ui fg
 
     processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget
-    showListWidget `onItemActivated` (\event -> focus episodeListWidget)
-    showListWidget `onSelectionChange` (\event -> processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget)
-
-    episodeListWidget `onItemActivated` (\event -> playEpisode =<< currentSelectedEpisode episodeListWidget)
+    showListWidget    `onItemActivated`   (\_ -> focus episodeListWidget)
+    showListWidget    `onSelectionChange` (\_ -> processSelected episodeListWidget . (!) shows . T.unpack =<< currentSelected showListWidget)
+    episodeListWidget `onItemActivated`   (\_ -> playEpisode =<< currentSelectedEpisode episodeListWidget)
 
     return c
 
